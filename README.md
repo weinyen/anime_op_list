@@ -7,6 +7,51 @@ GitHub Pages 上で YouTube の動画リストを表示するサイトです。`
 - **グリッド表示**: 5 列でサムネイルを並べる表示
 - **リスト表示**: 1 列で縦に並べる表示
 - **レスポンシブ**: PC/タブレット/スマホに対応
+- **リアルタイム検索**: 入力時に動画名でフィルタリング・ハイライト
+
+## 構成ファイル
+
+| ファイル | 役割 |
+|---------|------|
+| `playlist.tsv` | 動画リストデータ（タイトルと YouTube URL） |
+| `generate.py` | TSV → HTML 変換スクリプト |
+| `.github/workflows/generate.yml` | GitHub Actions ワークフロー |
+| `docs/_config.yml` | GitHub Pages 設定 |
+| `docs/index.html` | 生成される静的 HTML ページ |
+
+## 依存関係
+
+- **Python 3.11+**（GitHub Actions 環境にプリインストール済み）
+- **GitHub Actions**（自動生成・デプロイ）
+- **GitHub Pages**（静的サイトホスティング）
+
+## GitHub Actions ワークフロー
+
+### 発動条件
+
+| 条件 | 説明 |
+|------|------|
+| `playlist.tsv` のプッシュ | 動画リスト更新時に自動実行 |
+| 手動実行 | Actions タブから「Run workflow」 |
+
+### 処理フロー
+
+```
+playlist.tsv 更新 → GitHub Actions 発動 →
+1. checkout
+2. Python 設定
+3. generate.py 実行 → docs/index.html 生成
+4. 変更をコミット・プッシュ
+5. Pages デプロイ
+```
+
+### 権限
+
+- `contents: write` - 生成ファイルのコミット・プッシュ
+- `pages: write` - Pages デプロイ
+
+## 更新ワークフロー
+
 
 ## 要件
 
