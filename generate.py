@@ -49,10 +49,15 @@ def generate_html(videos):
     body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }}
     header {{ background: #16213e; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }}
     h1 {{ color: #e94560; font-size: 1.8rem; }}
-    .controls {{ display: flex; justify-content: center; gap: 15px; padding: 20px; background: #0f3460; }}
+    .controls {{ display: flex; justify-content: center; gap: 15px; padding: 20px; background: #0f3460; flex-wrap: wrap; }}
+    .search-box {{ display: flex; align-items: center; gap: 10px; }}
+    #searchInput {{ background: #16213e; color: #eee; border: 2px solid #e94560; padding: 8px 15px; border-radius: 8px; font-size: 1rem; min-width: 200px; outline: none; transition: border-color 0.3s; }}
+    #searchInput:focus {{ border-color: #ff6b9d; }}
+    #searchInput::placeholder {{ color: #666; }}
     button {{ background: #16213e; color: #eee; border: 2px solid #e94560; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.3s; }}
     button:hover {{ background: #e94560; color: #1a1a2e; }}
     button.active {{ background: #e94560; color: #1a1a2e; }}
+    mark {{ background: #ff6b9d; color: #fff; padding: 1px 3px; border-radius: 3px; }}
     .container {{ padding: 20px; max-width: 1400px; margin: 0 auto; }}
     .grid {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }}
     .list {{ display: grid; grid-template-columns: 1fr; gap: 15px; }}
@@ -84,6 +89,9 @@ def generate_html(videos):
     <h1>🎬 Anime OP/ED Playlist</h1>
   </header>
   <div class="controls">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="🔍 検索..." autocomplete="off">
+    </div>
     <button id="gridBtn" class="active" onclick="setView('grid')">Grid</button>
     <button id="listBtn" onclick="setView('list')">List</button>
   </div>
@@ -117,6 +125,39 @@ def generate_html(videos):
     <p>Generated from playlist.tsv | Total: {len(items)} videos</p>
   </footer>
   <script>
+    // Search data
+    const searchData = [
+      {title: '" + '", '.join([item['title'].replace('"', '&quot;') for item in items]) + '", urls: '" + '", '.join([item['url'] for item in items]) + '"'}
+    ];
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    
+    searchInput.addEventListener('input', function() {
+      const term = this.value.toLowerCase();
+      const allItems = document.querySelectorAll('.video-item');
+      
+      allItems.forEach(item => {
+        const titleEl = item.querySelector('.title');
+        if (!titleEl) return;
+
+        const title = titleEl.textContent.toLowerCase();
+        if (term === '' || title.includes(term)) {
+          item.style.display = '';
+          // Highlight matches
+          if (term !== '' && title.includes(term)) {
+            const regex = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+            titleEl.innerHTML = titleEl.textContent.replace(regex, '<mark>$1</mark>');
+          } else {
+            titleEl.innerHTML = titleEl.textContent;
+          }
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // View toggle
     function setView(view) {{
       document.getElementById('gridBtn').classList.toggle('active', view === 'grid');
       document.getElementById('listBtn').classList.toggle('active', view === 'list');
