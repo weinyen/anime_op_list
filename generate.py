@@ -2,6 +2,7 @@
 """Generate static HTML from playlist.tsv for GitHub Pages."""
 
 import csv
+import json
 import os
 
 def parse_playlist(filepath):
@@ -107,6 +108,11 @@ def generate_html(videos):
       </a>
 '''
 
+    search_data_json = json.dumps(
+        [{'title': item['title'], 'url': item['url']} for item in items],
+        ensure_ascii=False,
+    )
+
     html += '''    </div>
     <div class="list" id="listContainer" style="display: none;">
 '''
@@ -119,16 +125,14 @@ def generate_html(videos):
       </a>
 '''
 
-    html += f'''    </div>
+    html += r'''    </div>
   </div>
   <footer>
-    <p>Generated from playlist.tsv | Total: {len(items)} videos</p>
+    <p>Generated from playlist.tsv | Total: __TOTAL__ videos</p>
   </footer>
   <script>
     // Search data
-    const searchData = [
-      {title: '" + '", '.join([item['title'].replace('"', '&quot;') for item in items]) + '", urls: '" + '", '.join([item['url'] for item in items]) + '"'}
-    ];
+    const searchData = __SEARCH_DATA__;
 
     // Search functionality
     const searchInput = document.getElementById('searchInput');
@@ -158,18 +162,18 @@ def generate_html(videos):
     });
 
     // View toggle
-    function setView(view) {{
+    function setView(view) {
       document.getElementById('gridBtn').classList.toggle('active', view === 'grid');
       document.getElementById('listBtn').classList.toggle('active', view === 'list');
       document.getElementById('videoContainer').style.display = view === 'grid' ? 'grid' : 'none';
       document.getElementById('listContainer').style.display = view === 'list' ? 'grid' : 'none';
-      if (view === 'list') {{
+      if (view === 'list') {
         document.querySelectorAll('.list-item').forEach(item => item.style.opacity = '1');
-      }}
-    }}
+      }
+    }
   </script>
 </body>
-</html>'''
+</html>'''.replace('__TOTAL__', str(len(items))).replace('__SEARCH_DATA__', search_data_json)
     return html
 
 def main():
